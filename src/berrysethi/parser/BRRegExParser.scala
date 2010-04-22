@@ -33,7 +33,7 @@ class BRRegExParser extends Parsers {
 
 
   lazy val multiplier: Parser[BRTree] =
-    term <~ '*' ^^ { case t => Star(t) } |
+    term <~ '*' ^^ { case t => Asterisk(t) } |
     term <~ '?' ^^ { case t => QuestionMark(t) } |
     term
 
