@@ -22,7 +22,8 @@ class BRRegExParser extends Parsers {
    *
    *    E -> ME | M
    *    M -> T* | T? | T
-   *    T -> (E) | (E|E) | Sigma
+   *    T -> (O) | Sigma
+   *    O -> E|O | E
    */
 
 
@@ -38,9 +39,20 @@ class BRRegExParser extends Parsers {
 
 
   lazy val term: Parser[BRTree] =
-    '(' ~> expr <~ ')' |
-    '(' ~> expr ~ '|' ~ expr <~ ')' ^^ { case l ~ '|' ~ r => Or(l, r) } |
+    '(' ~> or <~ ')' |
     Sigma
+
+
+  lazy val or: Parser[BRTree] =
+    expr ~ '|' ~ or ^^ { case l ~ '|' ~ r => Or(l, r) } |
+    expr
+
+
+//  Alternative for parsers `term' and `or':
+//  lazy val term: Parser[BRTree] =
+//    '(' ~> or <~ ')' |
+//    '(' ~> rep1sep(expr, '|') <~ ')' ^^ { _.reduceRight(Or(_,_)) } |
+//    Sigma
 
 
   val Sigma: Parser[Leaf] =
