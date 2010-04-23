@@ -1,5 +1,5 @@
 package berrysethi.automata
 
 
-abstract class State
+class State
 object Failure extends State

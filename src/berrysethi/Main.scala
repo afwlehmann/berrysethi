@@ -9,18 +9,11 @@ import parser.BRRegExParser
 object Main {
 
   def main(args: Array[String]): Unit = {
-    val txt = "(a|b)*a(a|b)"
     val parser = new BRRegExParser
-    parser.expr(StreamReader(new StringReader(txt))) match {
+    parser.expr(StreamReader(new StringReader("(a|b)*a(a|b)"))) match {
       case parser.Success(root, _) =>
-        val nfa = new BRNFA(root)
-        Console println "\nTree:"
-        Console println root
-        Console println "\nStates:"
-        nfa.states map { Console println _ }
-//        Console println nfa.debug
-        Console println "\nTransitions:"
-        nfa.transitions map { Console println _ }
+        val nfa = BRNFA.regExToNFA(root)
+        Console println nfa.accepts("aaab")
 
       case parser.NoSuccess(msg, _) =>
         Console println msg

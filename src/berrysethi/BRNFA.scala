@@ -100,7 +100,7 @@ class BRNFA protected (val root: BRTree) {
   /**
    * The set of all leaves.
    */
-  protected val leaves: Set[Leaf] = {
+  val leaves: Set[Leaf] = {
     def auxLeaves(node: BRTree, acc: Set[Leaf]): Set[Leaf] =
       node match {
         case l: Leaf => acc + l
@@ -110,6 +110,7 @@ class BRNFA protected (val root: BRTree) {
         case QuestionMark(r1) => auxLeaves(r1, acc)
         case _ => throw NotImplementedException
       }
+    Console println root
     auxLeaves(root, Set.empty)
   }
   
@@ -162,43 +163,55 @@ class BRNFA protected (val root: BRTree) {
     fromRootToLeaves ++ fromLeavesToLeaves
   }
 
-
-//  def nodes: Set[BRTree] = {
-//    def auxNodes(q: BRTree): Set[BRTree] =
-//      Set[BRTree](q) ++ (q match {
-//        case l: Leaf => Set.empty
-//        case Concat(l, r) => auxNodes(l) ++ auxNodes(r)
-//        case Or(l, r) => auxNodes(l) ++ auxNodes(r)
-//        case Asterisk(r1) => auxNodes(r1)
-//        case QuestionMark(r1) => auxNodes(r1)
-//        case _ => throw NotImplementedException
-//      })
-//    auxNodes(root)
-//  }
-//
-//
-//  val debug: String = {
-//    val buf = new StringBuffer
-//
-//    val annots = List(("Empty", empty(_)), ("First", first(_)), ("Next", next(_)), ("Last", last(_)))
-//    for ((title, func) <- annots) {
-//      buf.append("\n\n" + title + "\n")
-//      buf.append((nodes map ( n => n + ": " + func(n))).mkString("\n"))
-//    }
-//
-//    buf.toString
-//  }
-
 }
 
 
 object BRNFA {
 
-//  def regExToNFA(tree: BRTree): NFA[Char] = {
-//    val aux = new BRNFA(tree)
-//    val Q = aux.states
-//    val F = aux.acceptingStates
-//
-//  }
+  def regExToNFA(tree: BRTree): NFA[Char] = {
+    val aux = new BRNFA(tree)
+
+    Console println tree
+    Console println aux.leaves
+
+    // The states returned by BRNFA.states are really just BRTree nodes which
+    // is why we need to create corresponding automate.State instances.
+    val Q = aux.states map { n => new automata.State }
+    val mapping = (aux.states zip Q).toMap
+    Console println mapping
+
+    // Now that we have that mapping, we can determine the set of accepting
+    // states and all the rest.
+    val F = aux.acceptingStates map (mapping(_))
+    val Sigma = aux.leaves map { _.v }
+    val q0 = mapping(aux.root)
+    
+    // The BRNFA class computes the transitions relations as a subset of
+    // BRTree x Char x BRTree, however, the NFA class needs a mapping from
+    // State to Char x State.
+    type TrRel = Map[automata.State, Set[(Char, automata.State)]]
+    val Delta: TrRel =
+      aux.states.foldLeft[TrRel](Map.empty){(acc, node) =>
+        // First, let's find the corresponding transitions. Also, since for all
+        // these transitions the starting node will be the same, map the 3-tuples
+        // from BRTree x Char x BRTree to 2-tuples from Char x State, leaving out
+        // the former BRTree and mapping the latter to its corresponding State.
+        val reducedTransitions: Set[(Char, automata.State)] =
+          aux.transitions filter {
+            case (from, _, _) if (from == node) => true
+            case _ => false
+          } map { case (_, v, toNode) => (v, mapping(toNode)) }
+        // Augment the accumulated mapping if applicable.
+        if (!reducedTransitions.isEmpty)
+          acc + Tuple2(mapping(node), reducedTransitions)
+        else
+          acc
+      }
+
+    Console println Delta
+
+    // Done.
+    new NFA[Char](Q, Sigma, Delta, q0, F)
+  }
 
 }
