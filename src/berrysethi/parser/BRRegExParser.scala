@@ -1,4 +1,4 @@
-package berrysethi
+package berrysethi.parser
 
 
 import scala.util.parsing.combinator.Parsers
@@ -61,14 +61,12 @@ class BRRegExParser extends Parsers {
         if (in.offset >= in.source.length)
           Failure("End of input", in.drop(in.offset))
         else {
-          in.source.charAt(in.offset) match {
-            case ch: Char if (!(reserved contains ch)) =>
-              Success(Leaf(ch), in.rest)
-
-            case _ =>
-              Failure("Expected [^" + reserved + "], got '" + in.first + "' instead.",
-                      in.drop(in.offset))
-          }
+          val ch = in.source.charAt(in.offset)
+          if (!(reserved contains ch))
+            Success(Leaf(ch), in.rest)
+          else
+            Failure("Expected [^" + reserved + "], got '" + ch + "' instead.",
+                    in.drop(in.offset))
         }
       }
     }
@@ -86,11 +84,11 @@ class BRRegExParser extends Parsers {
         if (in.offset >= in.source.length)
           Failure("End of input", in.drop(in.offset))
         else {
-          val aux = in.source.charAt(in.offset)
-          if (aux == ch)
-            Success(aux, in.rest)
+          val chIn = in.source.charAt(in.offset)
+          if (chIn == ch)
+            Success(chIn, in.rest)
           else
-            Failure("Expected '" + ch + "', got '" + aux + "' instead.",
+            Failure("Expected '" + ch + "', got '" + chIn + "' instead.",
                     in.drop(in.offset))
         }
       }
