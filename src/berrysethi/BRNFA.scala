@@ -1,12 +1,10 @@
 package berrysethi
 
 
-// Not really necessary but helps in debugging :)
-object NotImplementedException
-  extends RuntimeException("Not yet implemented!")
+import automata.NFA
 
 
-class BRNFA(val root: BRTree) {
+class BRNFA protected (val root: BRTree) {
 
   /**
    * Whether the given node can be empty or not. Post-order traversal.
@@ -100,52 +98,107 @@ class BRNFA(val root: BRTree) {
 
 
   /**
-   * The set of all states of this NFA.
+   * The set of all leaves.
    */
-  val states: Set[BRTree] = {
-    /**
-     * Auxiliary function to help us accumulate all the leaves.
-     * @param root      the current root node of the traversal
-     * @param acc       the set of leaves that have been accumulated so far
-     * @return          the set of all leaves under the given root node
-     */
-    def leaves(root: BRTree, acc: Set[BRTree]): Set[BRTree] = root match {
+  protected val leaves: Set[Leaf] = {
+    def auxLeaves(node: BRTree, acc: Set[Leaf]): Set[Leaf] =
+      node match {
         case l: Leaf => acc + l
-        case Or(l, r) => leaves(l, leaves(r, acc))
-        case Concat(l, r) => leaves(l, leaves(r, acc))
-        case Asterisk(r1) => leaves(r1, acc)
-        case QuestionMark(r1) => leaves(r1, acc)
+        case Or(l, r) => auxLeaves(l, auxLeaves(r, acc))
+        case Concat(l, r) => auxLeaves(l, auxLeaves(r, acc))
+        case Asterisk(r1) => auxLeaves(r1, acc)
+        case QuestionMark(r1) => auxLeaves(r1, acc)
         case _ => throw NotImplementedException
       }
-      
-    // Start the traversal with an empty accumulator at the root node. Also,
-    // insert the root node into the resulting set.
-    leaves(root, Set.empty) + root
+    auxLeaves(root, Set.empty)
   }
+  
+
+  /**
+   * The set of all states of the corresponding NFA.
+   */
+  val states: Set[BRTree] =
+    leaves.toSet[BRTree] + root
 
 
-  // Unlike a List, a Set is not covariant in its type parameter. But since the
-  // root node is typically not an instance of Leaf, we really need to do
-  // something about the missing covariance, i.e. explicit conversion to a
-  // Set[BRTree]. As a sidenote: Scala is able to infer the needed type
-  // automatically so that, actually, calling .toSet would suffice.
+  /**
+   * The set of all accepting states of the corresponding NFA.
+   *
+   * Note: Unlike a List, a Set is not covariant in its type parameter. But
+   * since the root node is typically not an instance of Leaf, we really need to
+   * do something about the missing covariance, i.e. explicit conversion to a
+   * Set[BRTree]. As a sidenote: Scala is able to infer the needed type
+   * automatically so that, actually, calling .toSet would suffice.
+   */
   val acceptingStates: Set[BRTree] =
     if (empty(root))
-      last(root).toSet[BRTree]
+      last(root).toSet[BRTree] + root
     else
       last(root).toSet[BRTree]
 
 
-  val transitions: Set[(BRTree, Char, BRTree)] =
-    (states.foldLeft[Set[(BRTree, Char, BRTree)]](Set.empty)((acc, node) =>
-      node match {
-        case l @ Leaf(v) if (first(root) contains l) => acc + Tuple3(root, v, l)
-        case _ => acc
-      })) ++
-    ((states zip states).foldLeft[Set[(BRTree, Char, BRTree)]](Set.empty)((acc, nodes) =>
-      nodes match {
-        case (l1: Leaf, l2 @ Leaf(v)) if (next(l1) contains l2) => acc + Tuple3(l1, v, l2)
-        case _ => acc
-      }))
+  /**
+   * The transitions relation of the corresponding NFA.
+   */
+  val transitions: Set[(BRTree, Char, BRTree)] = {
+    // First, determine the outgoing transitions of the root node.
+    val fromRootToLeaves =
+      (states.foldLeft[Set[(BRTree, Char, BRTree)]](Set.empty)((acc, node) =>
+        node match {
+          case l @ Leaf(v) if (first(root) contains l) =>
+            acc + Tuple3(root, v, l) // Explicit Tuple3 to prevent implicit conversion
+          case _ => acc
+        }))
+    // Next, determine the transitions from leaves to leaves.
+    val fromLeavesToLeaves = {
+      val leafXLeaf = for (l1 <- states; l2 <- states) yield (l1, l2)
+      leafXLeaf.foldLeft[Set[(BRTree, Char, BRTree)]](Set.empty)((acc, nodes) =>
+        nodes match {
+          case (l1: Leaf, l2 @ Leaf(v)) if (next(l1) contains l2) =>
+            acc + Tuple3(l1, v, l2) // Explicit Tuple3 to prevent implicit conversion
+          case _ => acc
+        })}
+    // The result is simply the union of the former two sets.
+    fromRootToLeaves ++ fromLeavesToLeaves
+  }
+
+
+//  def nodes: Set[BRTree] = {
+//    def auxNodes(q: BRTree): Set[BRTree] =
+//      Set[BRTree](q) ++ (q match {
+//        case l: Leaf => Set.empty
+//        case Concat(l, r) => auxNodes(l) ++ auxNodes(r)
+//        case Or(l, r) => auxNodes(l) ++ auxNodes(r)
+//        case Asterisk(r1) => auxNodes(r1)
+//        case QuestionMark(r1) => auxNodes(r1)
+//        case _ => throw NotImplementedException
+//      })
+//    auxNodes(root)
+//  }
+//
+//
+//  val debug: String = {
+//    val buf = new StringBuffer
+//
+//    val annots = List(("Empty", empty(_)), ("First", first(_)), ("Next", next(_)), ("Last", last(_)))
+//    for ((title, func) <- annots) {
+//      buf.append("\n\n" + title + "\n")
+//      buf.append((nodes map ( n => n + ": " + func(n))).mkString("\n"))
+//    }
+//
+//    buf.toString
+//  }
+
+}
+
+
+object BRNFA {
+
+//  def regExToNFA(tree: BRTree): NFA[Char] = {
+//    val aux = new BRNFA(tree)
+//    val Q = aux.states
+//    val F = aux.acceptingStates
+//
+//  }
 
 }

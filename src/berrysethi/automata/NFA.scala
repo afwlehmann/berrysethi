@@ -1,6 +1,9 @@
 package berrysethi.automata
 
 
+import berrysethi.NotImplementedException
+
+
 class NFA[T](val Q: Set[State],
              val Sigma: Set[T],
              val Delta: Map[State, Set[(T, State)]],
@@ -44,5 +47,12 @@ class NFA[T](val Q: Set[State],
    */
   def accepts(input: Iterable[T]): Boolean =
     auxAccepts(input, q0)
+
+
+  /**
+   * TODO: Conversion of this NFA to an equivalent DFA.
+   */
+  def toDFA: DFA[T] =
+    throw NotImplementedException
   
 }

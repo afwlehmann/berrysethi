@@ -3,6 +3,7 @@ package berrysethi
 
 import java.io.StringReader
 import scala.util.parsing.input._
+import parser.BRRegExParser
 
 
 object Main {
@@ -13,9 +14,14 @@ object Main {
     parser.expr(StreamReader(new StringReader(txt))) match {
       case parser.Success(root, _) =>
         val nfa = new BRNFA(root)
+        Console println "\nTree:"
         Console println root
-        Console println nfa.states
-        Console println nfa.transitions
+        Console println "\nStates:"
+        nfa.states map { Console println _ }
+//        Console println nfa.debug
+        Console println "\nTransitions:"
+        nfa.transitions map { Console println _ }
+
       case parser.NoSuccess(msg, _) =>
         Console println msg
     }
