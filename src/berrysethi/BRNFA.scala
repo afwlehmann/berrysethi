@@ -10,7 +10,12 @@ package berrysethi
 import automata.NFA
 
 
-class BRNFA protected (val root: BRTree) {
+// Not really necessary but helps in debugging :)
+object NotImplementedException
+  extends RuntimeException("Not yet implemented!")
+
+
+protected class BRNFA(val root: BRTree) {
 
   /**
    * Whether the given node can be empty or not. Post-order traversal.
@@ -67,8 +72,8 @@ class BRNFA protected (val root: BRTree) {
    */
   def next(n: BRTree): Set[Leaf] = {
     /**
-     * Auxiliary function that returns a Set of the next leaves for a
-     * particular node and whether that node has been found.
+     * Auxiliary function that returns a Set of the next leaves for a particular
+     * node and whether that node has been found.
      * @param root      the current root node of the traversal
      * @param n         the node that we're looking for
      * @param acc       the Set of leaves that have been accumulated so far
@@ -106,7 +111,7 @@ class BRNFA protected (val root: BRTree) {
   /**
    * The set of all leaves.
    */
-  lazy val leaves: Set[Leaf] = {
+  val leaves: Set[Leaf] = {
     def auxLeaves(node: BRTree): Set[Leaf] =
       node match {
         case l: Leaf => Set(l)
@@ -171,12 +176,12 @@ class BRNFA protected (val root: BRTree) {
 
 object BRNFA {
 
-  def regExToNFA(tree: BRTree): NFA[Char] = {
+  def apply(tree: BRTree): NFA[Char] = {
     val aux = new BRNFA(tree)
 
     // The states returned by BRNFA.states are really just BRTree nodes, which
     // is why we need to create corresponding automate.State instances.
-    val Q = aux.states map { _ => automata.State.apply }
+    val Q = aux.states map { _ => new automata.State }
     val mapping = (aux.states zip Q).toMap
 
     // Now that we have that mapping, we can determine the set of accepting
@@ -200,7 +205,7 @@ object BRNFA {
             case (from, _, _) if (from == node) => true
             case _ => false
           } map { case (_, v, toNode) => (v, mapping(toNode)) }
-        // Augment the accumulated mapping if applicable.
+        // Augment the hitherto accumulated mapping, if applicable.
         if (!reducedTransitions.isEmpty)
           acc + Tuple2(mapping(node), reducedTransitions)
         else

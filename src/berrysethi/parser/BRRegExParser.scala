@@ -11,7 +11,7 @@ import scala.util.parsing.combinator.Parsers
 import berrysethi._
 
 
-class BRRegExParser extends Parsers {
+object BRRegExParser extends Parsers {
 
   type Elem = Char
 

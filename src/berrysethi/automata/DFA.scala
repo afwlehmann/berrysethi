@@ -7,14 +7,14 @@
 package berrysethi.automata
 
 
+/**
+ * A deterministic finite automaton.
+ */
 class DFA[T](val Q: Set[State],
              val Sigma: Set[T],
              val delta: Map[(State, T), State],
-             val S: State,
+             val q: State,
              val F: Set[State]) {
-
-  val q: State = S
-
 
   /**
    * Whether this automaton is in an accepting state.
@@ -36,9 +36,9 @@ class DFA[T](val Q: Set[State],
    * @return            a new DFA[T] that has processed the given input
    */
   def step(input: T): DFA[T] =
-    if (!(Sigma(input) && (delta isDefinedAt (S, input))))
+    if (!(Sigma(input) && (delta isDefinedAt (q, input))))
       new DFA[T](Q, Sigma, delta, Failure, F)
     else
-      new DFA[T](Q, Sigma, delta, delta((S, input)), F)
+      new DFA[T](Q, Sigma, delta, delta((q, input)), F)
 
 }

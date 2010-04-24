@@ -7,9 +7,9 @@
 package berrysethi
 
 
-import java.io.StringReader
-import scala.util.parsing.input._
 import parser.BRRegExParser
+import scala.util.parsing.input.StreamReader
+import java.io.StringReader
 
 
 object Main {
@@ -20,13 +20,10 @@ object Main {
       System.exit(1)
     }
 
-    val parser = new BRRegExParser
-    parser.expr(StreamReader(new StringReader(args(0)))) match {
-      case parser.Success(root, _) =>
-        val nfa = BRNFA.regExToNFA(root)
-        Console println nfa.accepts(args(1))
-
-      case parser.NoSuccess(msg, _) =>
+    BRRegExParser.expr(StreamReader(new StringReader(args(0)))) match {
+      case BRRegExParser.Success(root, _) =>
+        Console println BRNFA(root).accepts(args(1))
+      case BRRegExParser.NoSuccess(msg, _) =>
         Console println msg
     }
   }

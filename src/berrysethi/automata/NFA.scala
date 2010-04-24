@@ -7,9 +7,9 @@
 package berrysethi.automata
 
 
-import berrysethi.NotImplementedException
-
-
+/**
+ * A non-deterministic finite automaton.
+ */
 class NFA[T](val Q: Set[State],
              val Sigma: Set[T],
              val Delta: Map[State, Set[(T, State)]],
@@ -18,7 +18,7 @@ class NFA[T](val Q: Set[State],
 
   /**
    * Checks whether a sequence of transitions exists such that all of the
-   * given input is consumed and all the same an accepting state is reached.
+   * given input is consumed, thereby finally reaching an accepting state.
    * @param input         the remaining input
    * @param q             the current state
    * @return              whether the given input can be accepted
@@ -57,9 +57,9 @@ class NFA[T](val Q: Set[State],
 
 
   /**
-   * TODO: Conversion of this NFA to an equivalent DFA.
+   * A deterministic finite automaton (DFA) which is equivalent to this NFA.
    */
   def toDFA: DFA[T] =
-    throw NotImplementedException
-  
+    throw new RuntimeException("Not yet implemented.")
+
 }
