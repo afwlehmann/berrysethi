@@ -1,3 +1,9 @@
+/**
+ * NFA.scala
+ * @author Alexander Lehmann <lehmanna@in.tum.de>
+ */
+
+
 package berrysethi.automata
 
 
@@ -17,7 +23,7 @@ class NFA[T](val Q: Set[State],
    * @param q             the current state
    * @return              whether the given input can be accepted
    */
-  protected def auxAccepts(input: Iterable[T], q: State): Boolean =
+  protected def auxAccepts(input: Iterable[T], q: State): Boolean = {
     (input.isEmpty, F(q)) match {
       case (true, true) =>
         // All input was consumed and the current state is an accepting state.
@@ -29,7 +35,7 @@ class NFA[T](val Q: Set[State],
           // Either the input is invalid or we're stuck in the current state.
           false
         } else {
-          val possibleTransitions = Delta(q) filter ( _._1 == input )
+          val possibleTransitions = Delta(q) filter ( _._1 == input.head )
           (false /: possibleTransitions)((acc, transition) =>
             if (acc) acc else auxAccepts(input.tail, transition._2))
         }
@@ -38,6 +44,7 @@ class NFA[T](val Q: Set[State],
         // The input is empty, but we're not in an accepting state.
         false
     }
+  }
 
 
   /**

@@ -1,3 +1,9 @@
+/**
+ * BRRegExParser.scala
+ * @author Alexander Lehmann <lehmanna@in.tum.de>
+ */
+
+
 package berrysethi.parser
 
 

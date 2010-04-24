@@ -1,3 +1,9 @@
+/**
+ * BRNFA.scala
+ * @author Alexander Lehmann <lehmanna@in.tum.de>
+ */
+
+
 package berrysethi
 
 
@@ -35,7 +41,7 @@ class BRNFA protected (val root: BRTree) {
       case Asterisk(n) => first(n)
       case QuestionMark(n) => first(n)
       case _ => throw NotImplementedException
-  }
+    }
 
 
   /**
@@ -100,23 +106,24 @@ class BRNFA protected (val root: BRTree) {
   /**
    * The set of all leaves.
    */
-  val leaves: Set[Leaf] = {
-    def auxLeaves(node: BRTree, acc: Set[Leaf]): Set[Leaf] =
+  lazy val leaves: Set[Leaf] = {
+    def auxLeaves(node: BRTree): Set[Leaf] =
       node match {
-        case l: Leaf => acc + l
-        case Or(l, r) => auxLeaves(l, auxLeaves(r, acc))
-        case Concat(l, r) => auxLeaves(l, auxLeaves(r, acc))
-        case Asterisk(r1) => auxLeaves(r1, acc)
-        case QuestionMark(r1) => auxLeaves(r1, acc)
+        case l: Leaf => Set(l)
+        case Or(l, r) => auxLeaves(l) ++ auxLeaves(r)
+        case Concat(l, r) => auxLeaves(l) ++ auxLeaves(r)
+        case Asterisk(r1) => auxLeaves(r1)
+        case QuestionMark(r1) => auxLeaves(r1)
         case _ => throw NotImplementedException
       }
-    Console println root
-    auxLeaves(root, Set.empty)
+    auxLeaves(root)
   }
   
 
   /**
    * The set of all states of the corresponding NFA.
+   *
+   * Note: Sets are not covariant in their type, hence the explicit conversion.
    */
   val states: Set[BRTree] =
     leaves.toSet[BRTree] + root
@@ -125,11 +132,7 @@ class BRNFA protected (val root: BRTree) {
   /**
    * The set of all accepting states of the corresponding NFA.
    *
-   * Note: Unlike a List, a Set is not covariant in its type parameter. But
-   * since the root node is typically not an instance of Leaf, we really need to
-   * do something about the missing covariance, i.e. explicit conversion to a
-   * Set[BRTree]. As a sidenote: Scala is able to infer the needed type
-   * automatically so that, actually, calling .toSet would suffice.
+   * Note: Sets are not covariant in their type, hence the explicit conversion.
    */
   val acceptingStates: Set[BRTree] =
     if (empty(root))
@@ -171,14 +174,10 @@ object BRNFA {
   def regExToNFA(tree: BRTree): NFA[Char] = {
     val aux = new BRNFA(tree)
 
-    Console println tree
-    Console println aux.leaves
-
-    // The states returned by BRNFA.states are really just BRTree nodes which
+    // The states returned by BRNFA.states are really just BRTree nodes, which
     // is why we need to create corresponding automate.State instances.
-    val Q = aux.states map { n => new automata.State }
+    val Q = aux.states map { _ => automata.State.apply }
     val mapping = (aux.states zip Q).toMap
-    Console println mapping
 
     // Now that we have that mapping, we can determine the set of accepting
     // states and all the rest.
@@ -207,8 +206,6 @@ object BRNFA {
         else
           acc
       }
-
-    Console println Delta
 
     // Done.
     new NFA[Char](Q, Sigma, Delta, q0, F)
