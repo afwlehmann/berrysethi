@@ -207,7 +207,7 @@ object BRNFA {
           } map { case (_, v, toNode) => (v, mapping(toNode)) }
         // Augment the hitherto accumulated mapping, if applicable.
         if (!reducedTransitions.isEmpty)
-          acc + Tuple2(mapping(node), reducedTransitions)
+          acc + (mapping(node) -> reducedTransitions)
         else
           acc
       }
