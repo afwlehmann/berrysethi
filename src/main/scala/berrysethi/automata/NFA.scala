@@ -55,11 +55,4 @@ class NFA[T](val Q: Set[State],
   def accepts(input: Iterable[T]): Boolean =
     auxAccepts(input, q0)
 
-
-  /**
-   * A deterministic finite automaton (DFA) which is equivalent to this NFA.
-   */
-  def toDFA: DFA[T] =
-    throw new RuntimeException("Not yet implemented.")
-
 }
