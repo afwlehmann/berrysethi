@@ -1,6 +1,6 @@
 /**
  * NFA.scala
- * @author Alexander Lehmann <lehmanna@in.tum.de>
+ * @author Alexander Lehmann <afwlehmann@googlemail.com>
  */
 
 
