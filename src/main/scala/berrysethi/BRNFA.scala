@@ -3,17 +3,13 @@
  * @author Alexander Lehmann <afwlehmann@googlemail.com>
  */
 
-
 package berrysethi
 
-
 import automata.NFA
-
 
 // Not really necessary but helps in debugging :)
 object NotImplementedException
   extends RuntimeException("Not yet implemented!")
-
 
 protected class BRNFA(val root: BRTree) {
 
@@ -32,7 +28,6 @@ protected class BRNFA(val root: BRTree) {
       case _ => throw NotImplementedException
     }
 
-
   /**
    * The set of all first leaves for a given node. Post-order traversal.
    * @param n           the node
@@ -48,7 +43,6 @@ protected class BRNFA(val root: BRTree) {
       case _ => throw NotImplementedException
     }
 
-
   /**
    * The set of all last leaves for a given node. Post-order traversal.
    * @param n           the node
@@ -63,7 +57,6 @@ protected class BRNFA(val root: BRTree) {
       case QuestionMark(r1) => last(r1)
       case _ => throw NotImplementedException
     }
-
 
   /**
    * The set of all next leaves for a given node. Pre-order traversal.
@@ -107,7 +100,6 @@ protected class BRNFA(val root: BRTree) {
     }
   }
 
-
   /**
    * The set of all leaves.
    */
@@ -123,7 +115,7 @@ protected class BRNFA(val root: BRTree) {
       }
     auxLeaves(root)
   }
-  
+
 
   /**
    * The set of all states of the corresponding NFA.
@@ -132,7 +124,6 @@ protected class BRNFA(val root: BRTree) {
    */
   val states: Set[BRTree] =
     leaves.toSet[BRTree] + root
-
 
   /**
    * The set of all accepting states of the corresponding NFA.
@@ -144,7 +135,6 @@ protected class BRNFA(val root: BRTree) {
       last(root).toSet[BRTree] + root
     else
       last(root).toSet[BRTree]
-
 
   /**
    * The transitions relation of the corresponding NFA.
@@ -173,7 +163,6 @@ protected class BRNFA(val root: BRTree) {
 
 }
 
-
 object BRNFA {
 
   def apply(tree: BRTree): NFA[Char] = {
@@ -189,7 +178,7 @@ object BRNFA {
     val F = aux.acceptingStates map (mapping(_))
     val Sigma = aux.leaves map { _.v }
     val q0 = mapping(aux.root)
-    
+
     // The BRNFA class computes the transitions relations as a subset of
     // BRTree x Char x BRTree, however, the NFA class needs a mapping from
     // State to Char x State.

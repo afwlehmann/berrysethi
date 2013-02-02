@@ -3,9 +3,7 @@
  * @author Alexander Lehmann <afwlehmann@googlemail.com>
  */
 
-
 package berrysethi.automata
-
 
 /**
  * A non-deterministic finite automaton.
@@ -45,7 +43,6 @@ class NFA[T](val Q: Set[State],
         false
     }
   }
-
 
   /**
    * Whether this automaton accepts the given input.

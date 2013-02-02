@@ -3,14 +3,11 @@
  * @author Alexander Lehmann <afwlehmann@googlemail.com>
  */
 
-
 package berrysethi
-
 
 import parser.BRRegExParser
 import scala.util.parsing.input.StreamReader
 import java.io.StringReader
-
 
 object Main {
 
